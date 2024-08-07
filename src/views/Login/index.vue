@@ -1,9 +1,14 @@
 <script setup>
 import { ref } from "vue"
+import { loginAPI } from "@/apis/user.js"
+import 'element-plus/theme-chalk/el-message.css'
+import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
 
 const form = ref({
   account: '',
-  password: ''
+  password: '',
+  agree: true
 })
 
 const rules = {
@@ -16,7 +21,7 @@ const rules = {
   ],
   agree: [
     {
-      validate: (rule, value, callback) => {
+      validator: (rule, value, callback) => {
         if (value) {
           callback()
         } else {
@@ -28,11 +33,15 @@ const rules = {
 }
 
 const formRef = ref(null)
+const router = useRouter()
 
 const doLogin = () => {
-  formRef.value.validate((valid) => {
+  const { account, password } = form.value
+  formRef.value.validate(async (valid) => {
     if (valid) {
-
+      const res = await loginAPI({ account, password })
+      ElMessage({ type: 'success', message: '登入成功' })
+      router.replace({ path: '/' })
     }
   })
 }
@@ -67,7 +76,7 @@ const doLogin = () => {
               <el-form-item prop="password" label="密码">
                 <el-input v-model="form.password" />
               </el-form-item>
-              <el-form-item label-width="22px" prop="agree">
+              <el-form-item prop="agree" label-width="22px">
                 <el-checkbox size="large" v-model="form.agree">
                   我已同意隐私条款和服务条款
                 </el-checkbox>
