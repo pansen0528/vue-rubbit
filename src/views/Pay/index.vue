@@ -1,8 +1,27 @@
 <script setup>
-const payInfo = {}
+import { getOrderAPI } from '@/apis/pay.js'
+import { onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { useCountDown } from '@/composables/useCountDown.js'
+
+const { formatTime, start } = useCountDown()
+// 获取订单数据
+const route = useRoute()
+const payInfo = ref({})
+const getPayInfo = async () => {
+  const res = await getOrderAPI(route.query.id)
+  payInfo.value = res.result
+  start(res.result.countdown)
+}
+onMounted(() => getPayInfo())
+
+const baseURL = 'http://pcapi-xiaotuxian-front-devtest.itheima.net/'
+const backURL = 'http://127.0.0.1:5173/paycallback'
+const redirectUrl = encodeURIComponent(backURL)
+const payUrl = `${baseURL}pay/aliPay?orderId=${route.query.id}&redirect=${redirectUrl}`
 </script>
- 
- 
+
+
 <template>
   <div class="xtx-pay-page">
     <div class="container">
@@ -11,7 +30,7 @@ const payInfo = {}
         <span class="icon iconfont icon-queren2"></span>
         <div class="tip">
           <p>订单提交成功！请尽快完成支付。</p>
-          <p>支付还剩 <span>24分30秒</span>, 超时后将取消订单</p>
+          <p>支付还剩 <span>{{ formatTime }}</span>, 超时后将取消订单</p>
         </div>
         <div class="amount">
           <span>应付总额：</span>
@@ -38,49 +57,49 @@ const payInfo = {}
     </div>
   </div>
 </template>
- 
+
 <style scoped lang="scss">
 .xtx-pay-page {
   margin-top: 20px;
 }
- 
+
 .pay-info {
- 
+
   background: #fff;
   display: flex;
   align-items: center;
   height: 240px;
   padding: 0 80px;
- 
+
   .icon {
     font-size: 80px;
     color: #1dc779;
   }
- 
+
   .tip {
     padding-left: 10px;
     flex: 1;
- 
+
     p {
       &:first-child {
         font-size: 20px;
         margin-bottom: 5px;
       }
- 
+
       &:last-child {
         color: #999;
         font-size: 16px;
       }
     }
   }
- 
+
   .amount {
     span {
       &:first-child {
         font-size: 16px;
         color: #999;
       }
- 
+
       &:last-child {
         color: $priceColor;
         font-size: 20px;
@@ -88,23 +107,23 @@ const payInfo = {}
     }
   }
 }
- 
+
 .pay-type {
   margin-top: 20px;
   background-color: #fff;
   padding-bottom: 70px;
- 
+
   p {
     line-height: 70px;
     height: 70px;
     padding-left: 30px;
     font-size: 16px;
- 
+
     &.head {
       border-bottom: 1px solid #f5f5f5;
     }
   }
- 
+
   .btn {
     width: 150px;
     height: 50px;
@@ -114,16 +133,16 @@ const payInfo = {}
     margin-left: 30px;
     color: #666666;
     display: inline-block;
- 
+
     &.active,
     &:hover {
       border-color: $xtxColor;
     }
- 
+
     &.alipay {
       background: url(https://cdn.cnbj1.fds.api.mi-img.com/mi-mall/7b6b02396368c9314528c0bbd85a2e06.png) no-repeat center / contain;
     }
- 
+
     &.wx {
       background: url(https://cdn.cnbj1.fds.api.mi-img.com/mi-mall/c66f98cff8649bd5ba722c2e8067c6ca.jpg) no-repeat center / contain;
     }
